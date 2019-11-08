@@ -1,15 +1,29 @@
 [database]
-username="root"
-password="123"
-host="localhost"
-port=3306
-dbName="test"
+    username="root"
+    password="123"
+    host="localhost"
+    port=3306
+    dbName="test"
 
 [redis]
-host="localhost"
-port=6379
-password=""
+    host="localhost"
+    port=6379
+    password=""
+    [redis.pool]
+        initSize = 3
+        maxSize = 50
+        maxIdle = 10
+        idleTimeOut = 60
 
-[file_server]
-    [upload_url]
-    [download_url]
+[logstash]
+    host="localhost"
+    port=7000
+
+[fileserver]
+    upload_url="https://localhost:8000/file/upload"
+    download_ur="https://localhost:8000/file/download"
+    [fileserver.pool]
+        initSize = 1
+        maxSize = 80
+        maxIdle = 10
+        idleTimeOut = 60
