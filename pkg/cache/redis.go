@@ -33,10 +33,12 @@ func Delete(key string) error {
 	return client.Del(key).Err()
 }
 
-func IncrBy(key string, value int) error {
-	return client.IncrBy(key, int64(value)).Err()
+func IncrBy(key string, value int) (int64, error) {
+	result := client.IncrBy(key, int64(value))
+	return result.Val(), result.Err()
 }
 
-func DecrBy(key string, value int) error {
-	return client.DecrBy(key, int64(value)).Err()
+func DecrBy(key string, value int) (int64, error) {
+	result := client.DecrBy(key, int64(value))
+	return result.Val(), result.Err()
 }

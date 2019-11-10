@@ -1,6 +1,7 @@
 package config
 
 import (
+	"decode_test/pkg/app"
 	"fmt"
 	"github.com/BurntSushi/toml"
 	"os"
@@ -9,8 +10,6 @@ import (
 )
 
 const (
-	CONFIG_ENV_KEY = "ENV"
-
 	ENV_DEV  Env = "DEV"
 	ENV_TEST Env = "TEST"
 	ENV_LIVE Env = "LIVE"
@@ -41,26 +40,29 @@ type RedisCfg struct {
 	Pool     PoolCfg `toml:"pool"`
 }
 type MongoDBCfg struct {
-	Username  string   `toml:"username"`
-	Password  string   `toml:"password"`
-	HostPorts []string `toml:"host_ports"`
-	DBName    string   `toml:"dbName"`
+	Username         string   `toml:"username"`
+	Password         string   `toml:"password"`
+	Addresses        []string `toml:"addresses"`
+	UseSecondaryRead bool     `toml:"use_secondary_read"`
+	DBName           string   `toml:"dbName"`
+	Pool             PoolCfg  `toml:"pool"`
+	ReplicaSet       string   `toml:"replicaSet"`
 }
 type DataBaseCfg struct {
 	BasicCfg
-	Username string `toml:"username"`
-	Password string `toml:"password"`
-	DBName   string `toml:"dbName"`
+	Username string  `toml:"username"`
+	Password string  `toml:"password"`
+	DBName   string  `toml:"dbName"`
+	Pool     PoolCfg `toml:"pool"`
 }
 
 type FileServerCfg struct {
-	DownLoadUrl string  `toml:"download_url"`
-	UpLoadUrl   string  `toml:"upload_url"`
-	Pool        PoolCfg `toml:"pool"`
+	Endpoint        string `toml:"endpoint"`
+	AccessKey       string `toml:"accessKey"`
+	AccessKeySecret string `toml:"accessKeySecret"`
 }
 
 type PoolCfg struct {
-	MaxIdle int `toml:"maxIdle"`
 	// in milliseconds
 	IdleTimeOut time.Duration `toml:"idleTimeOut"`
 	InitSize    int           `toml:"initSize"`
@@ -72,11 +74,12 @@ type LogStashCfg struct {
 }
 
 func Setup() {
-	env, b := os.LookupEnv(CONFIG_ENV_KEY)
+	env, b := os.LookupEnv(app.CONFIG_ENV_KEY)
 	if !b {
-		fmt.Printf("env key \"%v\" not found", CONFIG_ENV_KEY)
+		fmt.Printf("env key \"%v\" not found", app.CONFIG_ENV_KEY)
 		os.Exit(-1)
 	}
+	CurrentEnv = Env(strings.ToUpper(env))
 	CurrentEnv = Env(strings.ToUpper(env))
 	configFilePath := "conf/" + strings.ToLower(env) + ".toml"
 	Cfg = new(Config)

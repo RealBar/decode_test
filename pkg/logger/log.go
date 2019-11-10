@@ -3,13 +3,11 @@ package logger
 import (
 	"decode_test/pkg/config"
 	error2 "decode_test/pkg/e"
-	"decode_test/pkg/utils"
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"net"
 	"os"
 	"strconv"
-	"sync/atomic"
 	"time"
 )
 
@@ -17,7 +15,7 @@ const (
 	LogStashConnectTimeout = time.Second * 60
 )
 
-var _logger atomic.Value
+var _logger *logrus.Logger
 
 // Setup initialize the log instance
 func Setup() {
@@ -34,5 +32,9 @@ func Setup() {
 	hook := NewHook(conn, DefaultFormatter(logrus.Fields{"type": "myappName"}))
 
 	l.Hooks.Add(hook)
-	_logger.Store(l)
+	_logger = l
+}
+
+func GetLogger() *logrus.Logger {
+	return _logger
 }

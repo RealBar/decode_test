@@ -1,6 +1,7 @@
 package service
 
 import (
+	"decode_test/pkg/app"
 	"decode_test/pkg/e"
 	"decode_test/pkg/utils"
 	"mime/multipart"
@@ -8,8 +9,8 @@ import (
 
 func UploadImageService(file *multipart.FileHeader, bizType int, parentPath string) UploadImageResult {
 	fileName := utils.TruncateFilename(file.Filename)
-	sizeInKb := file.Size
-	if sizeInKb > utils.MaxImageSize {
+	sizeInByte := file.Size
+	if sizeInByte > app.MaxImageSize {
 		return UploadImageResult{msg:"file size exceed",code:e.ParamInvalid}
 	}
 

@@ -4,6 +4,10 @@
     host="localhost"
     port=3306
     dbName="test"
+    [redis.pool]
+        initSize = 3
+        maxSize = 20
+        idleTimeOut = 60
 
 [redis]
     host="localhost"
@@ -16,20 +20,28 @@
         idleTimeOut = 60
 
 [mongodb]
-    host_ports=[
+    addresses=[
         "localhost:27017"
     ]
     username="wangyalou"
     password="123"
     dbName="test"
+    use_secondary_read=true
+    replicaSet="dev_replica"
+    [mongodb.pool]
+        initSize = 1
+        maxSize = 80
+        maxIdle = 10
+        idleTimeOut = 60
 
 [logstash]
     host="localhost"
     port=7000
 
 [fileserver]
-    upload_url="https://localhost:8000/file/upload"
-    download_ur="https://localhost:8000/file/download"
+    endpoint="http://oss-cn-hangzhou.aliyuncs.com"
+    accessKey="123"
+    accessKeySecret="12345"
     [fileserver.pool]
         initSize = 1
         maxSize = 80
