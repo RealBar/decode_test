@@ -1,4 +1,4 @@
-package app
+package handler
 
 type Response struct {
 	Code int         `json:"code"`

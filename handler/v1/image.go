@@ -6,23 +6,39 @@ import (
 	"decode_test/service"
 )
 
-func UploadImage(c *app.ContextProxy) {
+type UploadImageRequest struct {
+	ParentPath string `form:"parent_path" valid:""`
+	//`form:"image_file" valid:""`
+}
+
+func UploadImage(c *app.ApplicationContext) {
 	var req UploadImageRequest
 	code, err := c.Bind(&req)
 	if err != nil {
 		c.WriteResponse(code, err)
 		return
 	}
-	formFile, err := c.Context.FormFile("image_file")
+	formFile, err := c.GinC().FormFile("image_file")
 	if err != nil {
 		c.WriteResponse(e.ParamInvalid, err)
 		return
 	}
-	service.UploadImageService(formFile,req.BizType,req.ParentPath)
+	service.UploadImageService(formFile, req.ParentPath)
 }
 
-type UploadImageRequest struct {
-	BizType    int    `form:"biz_type" valid:""`
-	ParentPath string `form:"parent_path" valid:""`
+type UpdateImageRequest struct {
+	MediaID int64 `form:"media_id" valid:""`
 	//`form:"image_file" valid:""`
+}
+
+func UpdateImage(c *app.ApplicationContext) {
+
+}
+
+func DeleteImage(c *app.ApplicationContext) {
+
+}
+
+func QueryImage(c *app.ApplicationContext) {
+
 }

@@ -2,6 +2,7 @@ package model
 
 import (
 	"context"
+	"decode_test/pkg/app"
 	"decode_test/pkg/e"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
@@ -19,32 +20,34 @@ type SubMediaRef struct {
 }
 
 type SubMediaInfo struct {
-	Status     MediaStatus `bson:"status"`
-	CreateTime int64       `bson:"ctime"`
-	ModifyTime int64       `bson:"mtime"`
+	Status     app.MediaStatus `bson:"status"`
+	CreateTime int64           `bson:"ctime"`
+	ModifyTime int64           `bson:"mtime"`
 }
 
 const SubMediaCollName = "sub_media_red_collection"
 
 func (db *DBWrapper) CreateSubMediaRef(mediaID int64, subMediaID int64) error {
 	now := time.Now().Unix()
-	opts := options.FindOneAndUpdate().
-		SetUpsert(true)
+	opts := options.FindOneAndUpdate().SetUpsert(true)
 	info := SubMediaInfo{
-		Status:     MediaStatusNormal,
+		Status:     app.MediaStatusNormal,
 		CreateTime: now,
 		ModifyTime: now,
 	}
 
-	result := db.getColl(SubMediaCollName).FindOneAndUpdate(context.Background(),
-		bson.D{
-			{"_id", mediaID},
-			{"$set",
-				bson.D{
-					{"sub_media." + strconv.FormatInt(subMediaID, 10), info},
-				},
+	result := db.getColl(SubMediaCollName).
+		FindOneAndUpdate(context.Background(),
+			bson.D{
+				{"_id", mediaID},
 			},
-		}, opts)
+			bson.D{
+				{"$set",
+					bson.D{
+						{"sub_media." + strconv.FormatInt(subMediaID, 10), info},
+					},
+				},
+			}, opts)
 	err := result.Err()
 	if err != nil && err != mongo.ErrNoDocuments {
 		return err
@@ -55,7 +58,7 @@ func (db *DBWrapper) CreateSubMediaRef(mediaID int64, subMediaID int64) error {
 func (db *DBWrapper) DeleteSubMediaRef(mediaID int64, subMediaID int64) error {
 	now := time.Now().Unix()
 	info := SubMediaInfo{
-		Status:     MediaStatusDeleted,
+		Status:     app.MediaStatusDeleted,
 		ModifyTime: now,
 	}
 	opts := options.FindOneAndUpdate().SetUpsert(false)

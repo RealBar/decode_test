@@ -15,15 +15,13 @@ const (
 	LogStashConnectTimeout = time.Second * 60
 )
 
-var _logger *logrus.Logger
-
 // Setup initialize the log instance
-func Setup() {
+func Setup(cfg *config.Config) *logrus.Logger {
 	l := logrus.New()
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 	logrus.SetOutput(os.Stdout)
 	logrus.SetLevel(logrus.InfoLevel)
-	addr := config.Cfg.LogStashConfig.Host + strconv.Itoa(config.Cfg.LogStashConfig.Port)
+	addr := cfg.LogStashConfig.Host + strconv.Itoa(cfg.LogStashConfig.Port)
 	conn, err := net.DialTimeout("tcp", addr, LogStashConnectTimeout)
 	if err != nil {
 		fmt.Printf("connect logstash e:%v", err)
@@ -32,9 +30,5 @@ func Setup() {
 	hook := NewHook(conn, DefaultFormatter(logrus.Fields{"type": "myappName"}))
 
 	l.Hooks.Add(hook)
-	_logger = l
-}
-
-func GetLogger() *logrus.Logger {
-	return _logger
+	return l
 }

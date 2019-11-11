@@ -17,39 +17,41 @@ import (
 // process id:12 bits
 // random num: 12 bits
 
-var idGenerator struct {
+type IDGenerator struct {
 	ProcessID int64
 	IdcID     int64
 	RandGen   rand.Source
 }
 
-func Setup() {
+func Setup(logger *logrus.Logger, cache *cache.Cache) *IDGenerator {
+	var idGenerator = new(IDGenerator)
 	var idcID = app.DefaultIdcID
 	var err error
-	idcStr, b := os.LookupEnv(app.CONFIG_IDC_KEY)
+	idcStr, b := os.LookupEnv(app.ConfigIdcKey)
 	if !b {
-		logrus.Error("idc id not found in environment, using default IdcID:", app.DefaultIdcID)
+		logger.Error("idc id not found in environment, using default IdcID:", app.DefaultIdcID)
 	} else {
 		idcID, err = strconv.ParseInt(idcStr, 10, 64)
 		if err != nil {
-			logrus.Error("idc id invalid:", app.DefaultIdcID)
+			logger.Error("idc id invalid:", app.DefaultIdcID)
 			panic(err)
 		}
 	}
 	idGenerator.IdcID = idcID & 0x0f
 
-	processID, err := cache.IncrBy(app.REDIS_PROCESS_KEY, 1)
+	processID, err := cache.IncrBy(app.RedisProcessKey, 1)
 	if err != nil {
-		logrus.Error("get process id error")
+		logger.Error("get process id error")
 		panic(err)
 	}
 	idGenerator.ProcessID = processID & 0xfff
 	idGenerator.RandGen = rand.NewSource(time.Now().Unix())
+	return idGenerator
 }
 
-func GenerateID(ownerID int64) int64 {
+func (g *IDGenerator) GenerateID(ownerID int64) int64 {
 	nowInMillis := int64(time.Now().Nanosecond() * 1000_000 & 0xffffff)
 	ownerID = ownerID & 0x7f
-	randNum := idGenerator.RandGen.Int63() & 0xfff
-	return ownerID<<52 | nowInMillis<<28 | idGenerator.IdcID<<24 | idGenerator.ProcessID<<12 | randNum
+	randNum := g.RandGen.Int63() & 0xfff
+	return ownerID<<52 | nowInMillis<<28 | g.IdcID<<24 | g.ProcessID<<12 | randNum
 }

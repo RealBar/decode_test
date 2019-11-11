@@ -1,54 +1,27 @@
 package model
 
 import (
-	"decode_test/pkg/generator"
+	"decode_test/pkg/app"
 	"time"
 )
 
-type MediaStatus uint8
-type MediaType uint8
-type MediaFormat uint8
-
-const (
-	_ = MediaStatus(iota)
-	MediaStatusNormal
-	MediaStatusDeleted
-)
-const (
-	_ = MediaType(iota)
-	ImageType
-	VideoType
-	AudioType
-	TextType
-)
-
-const (
-	_ = MediaFormat(iota)
-	Jpeg
-	Gif
-	Png
-	Mp4
-	Mp3
-	SimpleText
-)
-
 type Media struct {
-	ID         int64       `gorm:"id"`
-	OwnerID    int64       `gorm:"owner_id"`
-	CreateTime int64       `gorm:"ctime"`
-	ModifyTime int64       `gorm:"mtime"`
-	Size       int64       `gorm:"size"`
-	Name       string      `gorm:"name"`
-	MD5        string      `gorm:"md5"`
-	Type       MediaType   `gorm:"type"`
-	Format     MediaFormat `gorm:"format"`
-	Status     MediaStatus `gorm:"status"`
-	ExtInfo    string      `gorm:"ext_info"`
+	ID         int64           `gorm:"id"`
+	OwnerID    int64           `gorm:"owner_id"`
+	CreateTime int64           `gorm:"ctime"`
+	ModifyTime int64           `gorm:"mtime"`
+	Size       int64           `gorm:"size"`
+	Name       string          `gorm:"name"`
+	MD5        string          `gorm:"md5"`
+	Type       app.MediaType   `gorm:"type"`
+	Format     app.MediaFormat `gorm:"format"`
+	Status     app.MediaStatus `gorm:"status"`
+	ExtInfo    string          `gorm:"ext_info"`
 }
 
-func (db *DBWrapper) CreateMedia(name string, mType MediaType, mFormat MediaFormat, MD5 string, size int64, ownerID int64,
-	extInfo string) error {
-	id := generator.GenerateID(ownerID)
+func (db *DBWrapper) CreateMedia(c *app.ApplicationContext, name string, mType app.MediaType, mFormat app.MediaFormat,
+	MD5 string, size int64, ownerID int64, extInfo string) error {
+	id := c.Gen().GenerateID(ownerID)
 	now := time.Now().Unix()
 	media := &Media{
 		ID:         id,
@@ -56,7 +29,7 @@ func (db *DBWrapper) CreateMedia(name string, mType MediaType, mFormat MediaForm
 		Size:       size,
 		Type:       mType,
 		Format:     mFormat,
-		Status:     MediaStatusNormal,
+		Status:     app.MediaStatusNormal,
 		MD5:        MD5,
 		CreateTime: now,
 		ModifyTime: now,

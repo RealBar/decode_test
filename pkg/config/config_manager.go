@@ -9,25 +9,17 @@ import (
 	"time"
 )
 
-const (
-	ENV_DEV  Env = "DEV"
-	ENV_TEST Env = "TEST"
-	ENV_LIVE Env = "LIVE"
-)
-
-var (
-	Cfg        *Config
-	CurrentEnv = ENV_DEV
-)
-
-type Env string
-
 type Config struct {
 	RedisConfig      RedisCfg      `toml:"redis"`
 	DataBaseConfig   DataBaseCfg   `toml:"database"`
 	LogStashConfig   LogStashCfg   `toml:"logstash"`
 	FileServerConfig FileServerCfg `toml:"fileserver"`
 	MongoDBConfig    MongoDBCfg    `toml:"mongodb"`
+	CurrentEnv       app.Env
+	ListenPort       int
+	MaxHeaderBytes   int
+	ReadTimeout      time.Duration
+	WriteTimeout     time.Duration
 }
 
 type BasicCfg struct {
@@ -73,19 +65,25 @@ type LogStashCfg struct {
 	BasicCfg
 }
 
-func Setup() {
-	env, b := os.LookupEnv(app.CONFIG_ENV_KEY)
-	if !b {
-		fmt.Printf("env key \"%v\" not found", app.CONFIG_ENV_KEY)
-		os.Exit(-1)
+func Setup() *Config {
+	cfg := new(Config)
+	cfg.ListenPort = app.DefaultListenPort
+	cfg.CurrentEnv = app.DefaultEnv
+	cfg.MaxHeaderBytes = app.DefaultMaxHeaderBytes
+	cfg.ReadTimeout = app.DefaultReadTimeout
+	cfg.WriteTimeout = app.DefaultReadTimeout
+	envStr, b := os.LookupEnv(app.ConfigEnvKey)
+	if b {
+		cfg.CurrentEnv = app.Env(strings.ToUpper(envStr))
+	} else {
+		fmt.Printf("envStr key \"%v\" not found, using default env:%s", app.ConfigEnvKey, app.DefaultEnv)
 	}
-	CurrentEnv = Env(strings.ToUpper(env))
-	CurrentEnv = Env(strings.ToUpper(env))
-	configFilePath := "conf/" + strings.ToLower(env) + ".toml"
-	Cfg = new(Config)
-	_, e := toml.DecodeFile(configFilePath, Cfg)
+	configFilePath := "conf/" + strings.ToLower(envStr) + ".toml"
+	_, e := toml.DecodeFile(configFilePath, cfg)
 	if e != nil {
 		fmt.Printf("init config file e:%v", e)
-		os.Exit(-1)
+		panic(e)
 	}
+
+	return cfg
 }
